@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: tenzi-server
+    environment:
+      NODE_ENV: production
+      PORT: 3010
+      HOST: 0.0.0.0
+    ports:
+      - "3010:3010"
+    restart: unless-stopped
+    networks:
+      - tenzi-network
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: tenzi-client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - tenzi-network
+
+networks:
+  tenzi-network:
+    driver: bridge

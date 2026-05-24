@@ -115,6 +115,7 @@ export default function App() {
 		bestTime: null,
 		bestRolls: null,
 		maxPlayers: 4,
+		gameStarted: false,
 	});
 
 	React.useEffect(() => {
@@ -222,6 +223,10 @@ export default function App() {
 		}
 	}
 
+	function startGame() {
+		sendMessage({ type: "start_game" });
+	}
+
 	const currentPlayer = state.players.find((player) => player.id === playerId);
 
 	function submitName(event) {
@@ -299,6 +304,52 @@ export default function App() {
 
 	const otherPlayers = state.players.filter((player) => player.id !== playerId);
 
+	if (hasJoined && !state.gameStarted) {
+		return (
+			<div className="app-shell lobby-screen">
+				<aside className="side-panel">
+					<h1 className="title">Tenzi Multiplayer</h1>
+					<p className="gameDescription">
+						Collect all six sets (1 – 6). Freeze 10 of a kind, then Bank the set.
+						First to bank all six wins.
+					</p>
+					<div className="panel-stats">
+						<p>Connection: {status}</p>
+					</div>
+					{error && <p className="error">{error}</p>}
+				</aside>
+
+				<main className="board-wrap">
+					<div className="lobby-content">
+						<h2 className="lobby-title">Waiting for players...</h2>
+						<div className="lobby-players">
+							{state.players.map((player) => (
+								<div key={player.id} className="lobby-player">
+									<img
+										className="lobby-player-avatar"
+										src={player.avatar || AVATARS[0]}
+										alt={`${player.name} avatar`}
+									/>
+									<p className="lobby-player-name">{player.name}</p>
+								</div>
+							))}
+						</div>
+						<p className="lobby-count">
+							{state.players.length} / {state.maxPlayers} players
+						</p>
+						<button
+							className="start-game-btn"
+							onClick={startGame}
+							disabled={state.players.length < 1}
+						>
+							Start Game
+						</button>
+					</div>
+				</main>
+			</div>
+		);
+	}
+
 	return (
 		<div className="app-shell">
 			{winEvent && (
@@ -314,7 +365,7 @@ export default function App() {
 							className="win-button"
 							onClick={() => setHasJoined(false)}
 						>
-							Play Again
+							Back to Lobby
 						</button>
 					</div>
 				</div>

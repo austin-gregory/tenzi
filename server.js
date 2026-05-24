@@ -26,6 +26,8 @@ const players = new Map();
 let nextPlayerNumber = 1;
 let bestTime = null;
 let bestRolls = null;
+let gameStarted = false;
+let gameStartTime = null;
 
 function createDie() {
 	return {
@@ -54,10 +56,13 @@ function createPlayer() {
 }
 
 function getPlayerTime(player) {
+	if (!gameStarted || !gameStartTime) {
+		return 0;
+	}
 	if (player.tenzies) {
 		return player.finishedTime;
 	}
-	return Math.floor((Date.now() - player.startTime) / 1000);
+	return Math.floor((Date.now() - gameStartTime) / 1000);
 }
 
 function isSetReadyToBank(player) {
@@ -94,6 +99,7 @@ function serializeState() {
 		bestTime,
 		bestRolls,
 		maxPlayers: MAX_PLAYERS,
+		gameStarted,
 	};
 }
 
@@ -110,7 +116,7 @@ function broadcastState() {
 	}
 }
 
-function bankSet(player) {
+function bankSet(player, playerId) {
 	if (!isSetReadyToBank(player)) {
 		return false;
 	}
@@ -134,6 +140,7 @@ function bankSet(player) {
 			name: player.name,
 			avatar: player.avatar,
 		});
+		return "won";
 	}
 	return true;
 }
@@ -282,6 +289,18 @@ wss.on("connection", (ws) => {
 			return;
 		}
 
+		if (message.type === "start_game") {
+			if (!gameStarted) {
+				gameStarted = true;
+				gameStartTime = Date.now();
+				for (const player of players.values()) {
+					player.startTime = gameStartTime;
+				}
+			}
+			broadcastState();
+			return;
+		}
+
 		if (message.type === "toggle_hold") {
 			currentPlayer.dice = currentPlayer.dice.map((die) =>
 				die.id === message.dieId ? { ...die, isFrozen: !die.isFrozen } : die
@@ -291,7 +310,11 @@ wss.on("connection", (ws) => {
 		}
 
 		if (message.type === "bank_set") {
-			if (bankSet(currentPlayer)) {
+			const bankResult = bankSet(currentPlayer, currentPlayerId);
+			if (bankResult === "won") {
+				// Win event is already broadcast in bankSet, don't broadcast tenzie event
+			} else if (bankResult) {
+				// Regular set was banked, broadcast tenzie event
 				broadcastTenzieEvent({
 					playerId: currentPlayerId,
 					name: currentPlayer.name,
@@ -308,8 +331,16 @@ wss.on("connection", (ws) => {
 				currentPlayer.rollCount = 0;
 				currentPlayer.tenzies = false;
 				currentPlayer.finishedTime = 0;
-				currentPlayer.startTime = Date.now();
 				currentPlayer.bankedValues = [];
+				gameStarted = false;
+				gameStartTime = null;
+				for (const player of players.values()) {
+					player.dice = createDiceSet();
+					player.rollCount = 0;
+					player.tenzies = false;
+					player.finishedTime = 0;
+					player.bankedValues = [];
+				}
 			} else {
 				currentPlayer.dice = currentPlayer.dice.map((die) =>
 					die.isFrozen ? die : createDie()

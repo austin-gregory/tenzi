@@ -881,6 +881,98 @@ button {
 	}
 }
 
+.lobby-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	max-width: 100%;
+}
+
+.lobby-screen .board-wrap {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.lobby-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 32px;
+	padding: 40px 20px;
+	text-align: center;
+}
+
+.lobby-title {
+	font-family: "Karla", sans-serif;
+	font-size: 2rem;
+	color: #273541;
+	margin: 0;
+}
+
+.lobby-players {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+	gap: 20px;
+	max-width: 600px;
+}
+
+.lobby-player {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.lobby-player-avatar {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 3px solid #2d5bff;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lobby-player-name {
+	font-weight: 600;
+	color: #273541;
+	margin: 0;
+	word-break: break-word;
+}
+
+.lobby-count {
+	font-family: "Karla", sans-serif;
+	font-size: 1.2rem;
+	color: #576270;
+	margin: 0;
+}
+
+.start-game-btn {
+	padding: 14px 40px;
+	background: #5035ff;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-family: "Karla", sans-serif;
+	font-size: 1.1rem;
+	font-weight: 700;
+	cursor: pointer;
+	min-width: 200px;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.start-game-btn:hover:not(:disabled) {
+	background-color: #3d28cc;
+	transform: scale(1.02);
+}
+
+.start-game-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.tenzie-toast {
 		animation: tenzie-fade 1.8s ease-out forwards;
